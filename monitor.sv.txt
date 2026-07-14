@@ -1,0 +1,27 @@
+class monitor;
+    virtual tb_if vif;
+    mailbox mon2scb;
+    // COVERAGE
+    covergroup cg;
+        coverpoint vif.bin {
+            bins all_values[] = {[0:15]};
+        }
+    endgroup
+    function new(mailbox mon2scb, virtual tb_if vif);
+        this.mon2scb = mon2scb;
+        this.vif = vif;
+        cg = new();
+    endfunction
+    task run();
+        transaction tr;
+        forever begin
+            @(posedge vif.clk);
+            tr = new();
+            tr.bin = vif.bin;
+            tr.seg = vif.seg;
+            cg.sample();
+            mon2scb.put(tr);
+            tr.display("MONITOR");
+        end
+    endtask
+endclass
